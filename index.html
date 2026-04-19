@@ -1,575 +1,884 @@
 <!DOCTYPE html>
-<html lang="he" dir="rtl">
+<html lang="he" dir="rtl" data-theme="dark">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Stats 馃弨">
+<meta name="apple-mobile-web-app-title" content="NBA Stats">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="theme-color" content="#FF6B00">
+<meta name="theme-color" content="#17408B">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon.svg">
-<title>诪注拽讘 住讟讟讬住讟讬拽讜转 馃弨</title>
-<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;600;700&family=Rubik:wght@400;500;700&display=swap" rel="stylesheet">
+<title>NBA Stats Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,400;0,600;0,700;0,800;0,900;1,700&family=Rubik:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --orange:#FF6B00; --orange-light:#FF8C38;
-    --dark:#0D0D0D; --dark2:#1A1A2E; --dark3:#16213E;
-    --card:#1E1E2E; --card2:#252535;
-    --gold:#FFD700; --green:#00C853; --red:#FF1744;
-    --blue:#2979FF; --purple:#AA00FF;
-    --text:#F0F0F0; --muted:#888; --border:#333;
-  }
-  * { box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; }
-  body {
-    background:var(--dark2); color:var(--text); font-family:'Rubik',sans-serif;
-    min-height:100vh; min-height:-webkit-fill-available; overscroll-behavior:none;
-    background-image:radial-gradient(ellipse at 20% 10%,rgba(255,107,0,.08) 0%,transparent 50%),
-                     radial-gradient(ellipse at 80% 90%,rgba(41,121,255,.06) 0%,transparent 50%);
-  }
-  body[lang="en"] { direction:ltr; }
+/* ══════════════════════════════
+   NBA COLOR SYSTEM
+   Primary: #17408B (NBA Blue)
+   Secondary: #C9082A (NBA Red)
+   Gold: #FDB927 (Lakers/Trophy gold)
+   ══════════════════════════════ */
 
-  /* HEADER */
-  header {
-    background:linear-gradient(135deg,var(--dark),var(--dark3));
-    border-bottom:3px solid var(--orange);
-    padding:12px 16px; padding-top:max(12px,env(safe-area-inset-top));
-    display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px;
-    position:sticky; top:0; z-index:100; box-shadow:0 4px 20px rgba(255,107,0,.2);
-  }
-  .logo { display:flex; align-items:center; gap:8px; font-family:'Oswald',sans-serif; font-size:1.3rem; font-weight:700; color:var(--orange); }
-  .logo span { font-size:1.5rem; }
-  .header-right { display:flex; align-items:center; gap:8px; }
-  .lang-btn { background:var(--card2); border:1px solid var(--border); color:var(--muted); padding:5px 12px; border-radius:20px; cursor:pointer; font-size:.82rem; font-family:inherit; transition:all .2s; }
-  .lang-btn.active { background:var(--orange); color:#fff; border-color:var(--orange); }
+:root {
+  --nba-blue: #17408B;
+  --nba-red:  #C9082A;
+  --nba-gold: #FDB927;
+  --nba-white:#FFFFFF;
+}
 
-  /* TABS */
-  .tabs { display:flex; gap:3px; background:var(--dark); padding:6px; border-radius:10px; margin:14px 14px 0; border:1px solid var(--border); }
-  .tab-btn { flex:1; padding:9px 4px; border:none; border-radius:7px; background:transparent; color:var(--muted); cursor:pointer; font-family:inherit; font-size:.85rem; transition:all .2s; font-weight:500; }
-  .tab-btn.active { background:var(--orange); color:#fff; box-shadow:0 2px 12px rgba(255,107,0,.35); }
+/* ── DARK ── */
+[data-theme="dark"] {
+  --bg:        #080C14;
+  --bg2:       #0D1220;
+  --bg3:       #121828;
+  --surface:   #161E2E;
+  --surface2:  #1C2538;
+  --text:      #EEF0F8;
+  --text2:     #8A90B0;
+  --text3:     #4A5070;
+  --border:    #1E2840;
+  --border2:   #253050;
+  --inp:       #0A0F1C;
 
-  main { padding:14px 14px 90px; max-width:860px; margin:0 auto; }
-  .section { display:none; }
-  .section.active { display:block; }
+  --score-grad: linear-gradient(160deg,#0A1020 0%,#141E38 50%,#0A1428 100%);
+  --card-grad:  linear-gradient(180deg,#151E30 0%,#101828 100%);
+  --hdr-grad:   linear-gradient(180deg,#0A1020 0%,#0D1428 100%);
+  --tbl-stripe: rgba(255,255,255,.025);
 
-  /* SETUP */
-  .setup-card { background:var(--card); border-radius:14px; padding:18px; margin-bottom:16px; border:1px solid var(--border); }
-  .setup-card h2 { font-family:'Oswald',sans-serif; font-size:1.2rem; color:var(--orange); margin-bottom:14px; display:flex; align-items:center; gap:8px; }
-  .input-group { margin-bottom:12px; }
-  .input-group label { display:block; font-size:.82rem; color:var(--muted); margin-bottom:5px; }
-  .input-group input { width:100%; padding:10px 12px; background:var(--dark); border:1px solid var(--border); border-radius:8px; color:var(--text); font-family:inherit; font-size:.95rem; }
-  .input-group input:focus { outline:none; border-color:var(--orange); }
-  .players-grid { display:grid; gap:8px; margin-top:8px; }
-  .player-input-row { display:flex; gap:6px; align-items:center; }
-  .player-num { width:52px; flex-shrink:0; padding:10px 6px; text-align:center; background:var(--dark); border:1px solid var(--border); border-radius:8px; color:var(--orange); font-family:'Oswald',sans-serif; font-weight:700; font-size:1rem; }
-  .player-name { flex:1; padding:10px; background:var(--dark); border:1px solid var(--border); border-radius:8px; color:var(--text); font-family:inherit; font-size:.9rem; }
-  .player-name:focus,.player-num:focus { outline:none; border-color:var(--orange); }
-  .btn-primary { background:linear-gradient(135deg,var(--orange),var(--orange-light)); color:#fff; border:none; padding:12px 24px; border-radius:10px; cursor:pointer; font-family:'Oswald',sans-serif; font-size:1rem; font-weight:600; transition:all .2s; box-shadow:0 4px 15px rgba(255,107,0,.3); }
-  .btn-primary:active { transform:scale(.96); }
+  --pts-bg: rgba(253,185,39,.12);  --pts-c: #FDB927;
+  --reb-bg: rgba(0,180,255,.12);   --reb-c: #00B4FF;
+  --ast-bg: rgba(0,210,120,.12);   --ast-c: #00D278;
+  --stl-bg: rgba(180,100,255,.12); --stl-c: #B464FF;
+  --blk-bg: rgba(255,140,0,.12);   --blk-c: #FF8C00;
+  --to-bg:  rgba(120,130,160,.1);  --to-c:  #7882A0;
+  --foul-bg:rgba(201,8,42,.14);    --foul-c:#E84060;
 
-  /* GAME HEADER */
-  .game-header { background:linear-gradient(135deg,var(--dark),var(--dark3)); border-radius:14px; padding:14px 18px; border:1px solid var(--orange); margin-bottom:16px; display:flex; align-items:center; justify-content:space-between; }
-  .team-title { font-family:'Oswald',sans-serif; font-size:1.4rem; color:var(--orange); }
-  .total-score-display { font-family:'Oswald',sans-serif; font-size:2rem; color:var(--gold); font-weight:700; }
+  --b1g: linear-gradient(160deg,#7A4800,#C87A00);
+  --b2g: linear-gradient(160deg,#0A2060,#1845A0);
+  --b3g: linear-gradient(160deg,#380070,#7010C0);
+  --brebg: linear-gradient(160deg,#003860,#0070C0);
+  --bastg: linear-gradient(160deg,#104818,#208030);
+  --bstlg: linear-gradient(160deg,#300060,#6010A8);
+  --bblkg: linear-gradient(160deg,#602000,#C04010);
+  --btog:  linear-gradient(160deg,#141414,#2A2A2A);
+  --bfoulg:linear-gradient(160deg,#480010,#A01828);
+  --bundog:linear-gradient(160deg,#0A2828,#184040);
+}
 
-  /* PLAYER CARDS */
-  .player-cards { display:grid; gap:12px; }
-  .player-card { background:var(--card); border-radius:12px; border:2px solid var(--border); overflow:hidden; }
+/* ── LIGHT ── */
+[data-theme="light"] {
+  --bg:        #F0F2F8;
+  --bg2:       #FFFFFF;
+  --bg3:       #E8EAF2;
+  --surface:   #FFFFFF;
+  --surface2:  #F4F6FC;
+  --text:      #0A1020;
+  --text2:     #50587A;
+  --text3:     #A0A8C0;
+  --border:    #D8DCF0;
+  --border2:   #C8CEE8;
+  --inp:       #F4F6FC;
 
-  @keyframes cardFlash {
-    0%   { border-color:var(--green); box-shadow:0 0 0 0 rgba(0,200,83,.5); }
-    40%  { border-color:var(--green); box-shadow:0 0 18px 8px rgba(0,200,83,.3); }
-    100% { border-color:var(--border); box-shadow:none; }
-  }
-  .player-card.flash { animation:cardFlash .55s ease-out forwards; }
+  --score-grad: linear-gradient(160deg,#17408B 0%,#1A4BA0 50%,#122E70 100%);
+  --card-grad:  linear-gradient(180deg,#FFFFFF 0%,#F8FAFF 100%);
+  --hdr-grad:   linear-gradient(180deg,#FFFFFF 0%,#F8FAFF 100%);
+  --tbl-stripe: rgba(23,64,139,.04);
 
-  .player-card-header { background:linear-gradient(90deg,var(--dark3),var(--card2)); padding:10px 14px; display:flex; align-items:center; gap:10px; }
-  .jersey-num { background:var(--orange); color:#fff; width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-family:'Oswald',sans-serif; font-weight:700; font-size:.95rem; flex-shrink:0; }
-  .player-name-display { font-weight:600; font-size:.95rem; flex:1; }
-  .player-totals { display:flex; gap:6px; flex-wrap:wrap; }
-  .stat-badge { background:var(--dark); border-radius:6px; padding:3px 7px; display:flex; align-items:center; gap:3px; }
-  .stat-badge .val { font-family:'Oswald',sans-serif; font-weight:700; font-size:.95rem; }
-  .stat-badge .lbl { color:var(--muted); font-size:.68rem; }
-  .stat-pts { color:var(--gold); }
-  .stat-reb { color:var(--blue); }
-  .stat-ast { color:var(--green); }
-  .stat-stl { color:var(--purple); }
+  --pts-bg: rgba(180,130,0,.1);   --pts-c: #A07800;
+  --reb-bg: rgba(0,100,200,.1);   --reb-c: #0060C0;
+  --ast-bg: rgba(0,140,60,.1);    --ast-c: #007830;
+  --stl-bg: rgba(120,40,200,.1);  --stl-c: #7028C0;
+  --blk-bg: rgba(180,80,0,.1);    --blk-c: #B05000;
+  --to-bg:  rgba(80,90,120,.08);  --to-c:  #505A78;
+  --foul-bg:rgba(180,0,30,.1);    --foul-c:#A00018;
 
-  /* ACTION BUTTONS */
-  .player-actions { padding:10px; display:grid; grid-template-columns:repeat(5,1fr); gap:6px; }
+  --b1g: linear-gradient(160deg,#8C5200,#D48A00);
+  --b2g: linear-gradient(160deg,#0C2870,#1C50B8);
+  --b3g: linear-gradient(160deg,#420080,#8018D0);
+  --brebg: linear-gradient(160deg,#004878,#0080D8);
+  --bastg: linear-gradient(160deg,#145820,#289040);
+  --bstlg: linear-gradient(160deg,#380070,#7018B8);
+  --bblkg: linear-gradient(160deg,#702800,#C84818);
+  --btog:  linear-gradient(160deg,#303448,#484E68);
+  --bfoulg:linear-gradient(160deg,#580010,#B02030);
+  --bundog:linear-gradient(160deg,#1A3848,#284E60);
+}
 
-  .action-btn {
-    border:none; border-radius:10px; padding:10px 4px;
-    cursor:pointer; font-family:inherit; font-weight:600; font-size:.75rem;
-    display:flex; flex-direction:column; align-items:center; gap:2px;
-    user-select:none; position:relative; overflow:hidden;
-    transition:filter .1s;
-  }
-  .action-btn .icon { font-size:1.25rem; pointer-events:none; }
-  .action-btn .label { font-size:.65rem; color:rgba(255,255,255,.85); text-align:center; line-height:1.2; pointer-events:none; }
+/* ══ BASE ══ */
+*, *::before, *::after { box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; }
+html, body { height:100%; overscroll-behavior:none; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Rubik', sans-serif;
+  min-height: 100vh;
+  min-height: -webkit-fill-available;
+  transition: background .3s, color .3s;
+}
+body[lang="en"] { direction: ltr; }
 
-  @keyframes btnPop {
-    0%   { transform:scale(1); }
-    35%  { transform:scale(.78); filter:brightness(1.5); }
-    65%  { transform:scale(1.1); filter:brightness(1.2); }
-    100% { transform:scale(1); filter:brightness(1); }
-  }
-  .action-btn.popping { animation:btnPop .3s ease-out forwards; }
+/* ══ HEADER ══ */
+.hdr {
+  background: var(--hdr-grad);
+  border-bottom: 2px solid var(--nba-red);
+  padding: 10px 14px;
+  padding-top: max(10px, env(safe-area-inset-top));
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  position: sticky; top: 0; z-index: 300;
+  box-shadow: 0 4px 24px rgba(201,8,42,.2);
+}
+.logo {
+  display: flex; align-items: center; gap: 8px;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 1.25rem; font-weight: 900; letter-spacing: 2px;
+  color: var(--text);
+}
+.logo-icon { font-size: 1.4rem; }
+.logo-nba {
+  background: var(--nba-blue);
+  color: #fff; font-size: .6rem; font-weight: 900;
+  padding: 1px 5px; border-radius: 3px; letter-spacing: 1px;
+  margin-inline-start: 2px; align-self: center;
+}
+.hdr-right { display:flex; align-items:center; gap:6px; }
 
-  .ripple {
-    position:absolute; border-radius:50%;
-    background:rgba(255,255,255,.35);
-    transform:scale(0); animation:rippleAnim .45s linear forwards;
-    pointer-events:none;
-  }
-  @keyframes rippleAnim { to { transform:scale(4); opacity:0; } }
+/* theme toggle */
+.theme-tog {
+  width: 34px; height: 34px;
+  background: var(--surface2); border: 1px solid var(--border2);
+  border-radius: 50%; cursor: pointer; font-size: .95rem;
+  display: flex; align-items:center; justify-content:center;
+  transition: all .2s;
+}
+.theme-tog:hover { border-color: var(--nba-gold); }
 
-  .btn-1pt  { background:linear-gradient(135deg,#b8860b,#DAA520); color:#fff; }
-  .btn-2pt  { background:linear-gradient(135deg,#1565C0,#2979FF); color:#fff; }
-  .btn-3pt  { background:linear-gradient(135deg,#6a0dad,#AA00FF); color:#fff; }
-  .btn-reb  { background:linear-gradient(135deg,#0277BD,#0288D1); color:#fff; }
-  .btn-ast  { background:linear-gradient(135deg,#1B5E20,#388E3C); color:#fff; }
-  .btn-stl  { background:linear-gradient(135deg,#4A148C,#7B1FA2); color:#fff; }
-  .btn-blk  { background:linear-gradient(135deg,#BF360C,#E64A19); color:#fff; }
-  .btn-to   { background:linear-gradient(135deg,#333,#555);       color:#fff; }
-  .btn-foul { background:linear-gradient(135deg,#7f1d1d,#b91c1c); color:#fff; }
-  .btn-undo { background:linear-gradient(135deg,#37474F,#546E7A); color:#fff; }
+/* language toggle */
+.lang-pill {
+  display: flex; background: var(--bg3);
+  border: 1px solid var(--border2); border-radius: 20px;
+  padding: 2px; gap: 2px;
+}
+.lang-btn {
+  border: none; background: transparent;
+  color: var(--text2); padding: 4px 10px; border-radius: 16px;
+  cursor: pointer; font-size: .72rem; font-family: inherit;
+  font-weight: 700; letter-spacing: .5px; transition: all .2s;
+}
+.lang-btn.active { background: var(--nba-red); color: #fff; }
 
-  /* MINI STAT ROW */
-  .player-mini-stats { border-top:1px solid var(--border); background:var(--dark3); padding:7px 8px; overflow-x:auto; }
-  .mini-stats-table { width:100%; border-collapse:collapse; font-size:.75rem; white-space:nowrap; }
-  .mini-stats-table th { color:var(--orange); font-family:'Oswald',sans-serif; font-size:.68rem; padding:2px 5px; text-align:center; font-weight:600; }
-  .mini-stats-table td { text-align:center; padding:3px 5px; font-family:'Oswald',sans-serif; font-weight:700; font-size:.85rem; }
-  .mini-pts  { color:var(--gold); }
-  .mini-reb  { color:var(--blue); }
-  .mini-ast  { color:var(--green); }
-  .mini-stl  { color:var(--purple); }
-  .mini-blk  { color:#FF7043; }
-  .mini-to   { color:var(--muted); }
-  .mini-foul { color:var(--red); }
+/* ══ TABS ══ */
+.tab-bar {
+  display: flex; background: var(--bg2);
+  border-bottom: 1px solid var(--border);
+  position: sticky; top: 50px; z-index: 200;
+}
+.tab-btn {
+  flex: 1; padding: 10px 4px;
+  border: none; background: transparent;
+  color: var(--text2);
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: .85rem; font-weight: 800; letter-spacing: .8px;
+  cursor: pointer; text-transform: uppercase;
+  border-bottom: 2.5px solid transparent;
+  transition: all .2s;
+}
+.tab-btn.active { color: var(--text); border-bottom-color: var(--nba-gold); }
 
-  /* STATS TABLE */
-  .stats-table-wrap { overflow-x:auto; border-radius:12px; border:1px solid var(--border); background:var(--card); }
-  table { width:100%; border-collapse:collapse; font-size:.83rem; }
-  thead { background:var(--dark3); }
-  th { padding:9px 10px; text-align:center; color:var(--orange); font-family:'Oswald',sans-serif; font-size:.8rem; white-space:nowrap; }
-  td { padding:9px 10px; text-align:center; border-top:1px solid var(--border); white-space:nowrap; }
-  tr:hover td { background:rgba(255,107,0,.05); }
-  .td-name { text-align:start; font-weight:600; }
-  .td-num  { color:var(--orange); font-family:'Oswald',sans-serif; font-weight:700; }
-  .td-pts  { color:var(--gold); font-weight:700; font-family:'Oswald',sans-serif; font-size:1rem; }
+main { padding-bottom: 80px; }
+.section { display: none; }
+.section.active { display: block; }
 
-  /* SHARE */
-  .share-section { background:var(--card); border-radius:14px; padding:18px; border:1px solid var(--border); }
-  .share-section h3 { font-family:'Oswald',sans-serif; color:var(--orange); margin-bottom:12px; font-size:1.1rem; }
-  .share-html-preview { background:var(--dark); border-radius:10px; padding:14px; border:1px solid var(--border); margin-bottom:12px; overflow-x:auto; }
-  .share-table { border-collapse:collapse; width:100%; font-size:.78rem; }
-  .share-table th { background:#FF6B00; color:#fff; padding:6px 8px; text-align:center; font-family:'Oswald',sans-serif; font-size:.75rem; white-space:nowrap; }
-  .share-table td { padding:5px 8px; text-align:center; border-bottom:1px solid #2a2a3a; white-space:nowrap; color:#ddd; }
-  .share-table tr:nth-child(even) td { background:rgba(255,255,255,.03); }
-  .share-table .s-pts  { color:#FFD700; font-weight:700; font-family:'Oswald',sans-serif; }
-  .share-table .s-name { text-align:start; font-weight:600; color:#fff; }
-  .share-table .s-num  { color:#FF6B00; font-family:'Oswald',sans-serif; font-weight:700; }
-  .share-table .s-total td { background:#16213E !important; font-weight:700; border-top:2px solid #FF6B00; }
-  .share-title-row { display:flex; align-items:center; gap:8px; margin-bottom:10px; flex-wrap:wrap; }
-  .share-team-title { font-family:'Oswald',sans-serif; font-size:1.1rem; color:var(--orange); }
-  .share-vs { color:var(--muted); font-size:.82rem; }
-  .share-btns { display:flex; gap:10px; flex-wrap:wrap; }
-  .btn-share { padding:10px 18px; border-radius:8px; border:none; cursor:pointer; font-family:inherit; font-weight:600; font-size:.88rem; transition:all .2s; }
-  .btn-copy { background:var(--card2); color:var(--text); border:1px solid var(--border); }
-  .btn-copy:hover { border-color:var(--orange); color:var(--orange); }
-  .btn-whatsapp { background:#25D366; color:#fff; }
+/* ══ SETUP ══ */
+.setup-wrap { padding: 14px; max-width: 580px; margin: 0 auto; }
 
-  /* TOAST */
-  #toast {
-    position:fixed; bottom:max(24px,env(safe-area-inset-bottom)); left:50%; transform:translateX(-50%);
-    background:var(--green); color:#fff; padding:10px 22px; border-radius:20px;
-    font-weight:600; font-size:.88rem; z-index:999; opacity:0; transition:opacity .3s; pointer-events:none;
-  }
-  #toast.show { opacity:1; }
+.s-block {
+  background: var(--card-grad);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 18px; margin-bottom: 14px;
+  box-shadow: 0 2px 20px rgba(0,0,0,.15);
+}
+.s-block-title {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: .78rem; font-weight: 900; letter-spacing: 2px;
+  color: var(--nba-red); text-transform: uppercase;
+  margin-bottom: 14px; display: flex; align-items: center; gap: 6px;
+}
+.f-lbl { font-size: .7rem; color: var(--text2); margin-bottom: 4px; display: block; letter-spacing: .4px; }
+.f-inp {
+  width: 100%; padding: 10px 12px;
+  background: var(--inp); border: 1.5px solid var(--border2);
+  border-radius: 10px; color: var(--text); font-family: inherit; font-size: .9rem;
+  margin-bottom: 12px; transition: border-color .2s;
+}
+.f-inp:focus { outline: none; border-color: var(--nba-blue); }
+.f-inp:last-of-type { margin-bottom: 0; }
+
+/* Players sub-header */
+.pl-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 12px;
+}
+.pl-count {
+  background: var(--bg3); border: 1px solid var(--border2);
+  border-radius: 10px; padding: 3px 10px;
+  font-size: .7rem; font-weight: 600; color: var(--text2);
+}
+/* Column labels */
+.p-col-labels {
+  display: grid; grid-template-columns: 70px 1fr 34px;
+  gap: 8px; padding: 0 2px; margin-bottom: 6px;
+}
+.p-col-lbl { font-size: .67rem; color: var(--text3); letter-spacing: .3px; text-align: center; }
+.p-col-lbl.left { text-align: start; padding-inline-start: 4px; }
+
+/* Player row */
+.p-row {
+  display: grid; grid-template-columns: 70px 1fr 34px;
+  gap: 8px; margin-bottom: 8px; align-items: center;
+}
+.p-row .jw { width: 70px; }
+
+/* Jersey field — unmistakable */
+.jw { display: flex; flex-direction: column; align-items: center; gap: 1px; }
+.jw .hash { display: none; }
+.j-inp {
+  width: 70px; height: 44px; padding: 0;
+  background: var(--inp);
+  border: 2px solid var(--nba-gold);
+  border-radius: 10px;
+  color: var(--nba-gold);
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 900; font-size: 1.5rem; text-align: center;
+  direction: ltr;
+  transition: box-shadow .2s;
+  -moz-appearance: textfield;
+}
+.j-inp::-webkit-inner-spin-button, .j-inp::-webkit-outer-spin-button { -webkit-appearance: none; }
+.j-inp:focus { outline: none; box-shadow: 0 0 0 3px rgba(253,185,39,.3); }
+
+.nm-inp {
+  height: 44px; padding: 0 12px;
+  background: var(--inp); border: 1.5px solid var(--border2);
+  border-radius: 10px; color: var(--text); font-family: inherit;
+  font-size: .88rem; width: 100%; transition: border-color .2s;
+}
+.nm-inp:focus { outline: none; border-color: var(--nba-blue); }
+
+.del-btn {
+  background: none; border: none; color: var(--text3);
+  cursor: pointer; font-size: 1rem; width: 34px; height: 44px;
+  display: flex; align-items: center; justify-content: center;
+  transition: color .2s; border-radius: 8px;
+}
+.del-btn:hover { color: var(--nba-red); background: rgba(201,8,42,.08); }
+
+.btn-row { display: flex; gap: 8px; margin-top: 16px; flex-wrap: wrap; }
+.btn-primary {
+  background: var(--nba-red); color: #fff; border: none;
+  padding: 12px 22px; border-radius: 10px; cursor: pointer;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: .95rem; font-weight: 800; letter-spacing: 1px; text-transform: uppercase;
+  box-shadow: 0 4px 16px rgba(201,8,42,.35); transition: all .15s;
+}
+.btn-primary:active { transform: scale(.93); box-shadow: none; }
+.btn-secondary {
+  background: var(--nba-blue); color: #fff; border: none;
+  padding: 12px 22px; border-radius: 10px; cursor: pointer;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: .95rem; font-weight: 800; letter-spacing: 1px; text-transform: uppercase;
+  box-shadow: 0 4px 16px rgba(23,64,139,.4); transition: all .15s;
+}
+.btn-secondary:active { transform: scale(.93); box-shadow: none; }
+
+/* ══ SCOREBOARD ══ */
+.scoreboard {
+  background: var(--score-grad);
+  padding: 16px 18px;
+  display: flex; align-items: center; justify-content: space-between;
+  border-bottom: 1px solid rgba(253,185,39,.15);
+  position: relative; overflow: hidden;
+}
+.scoreboard::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: repeating-linear-gradient(
+    -45deg, transparent, transparent 40px,
+    rgba(255,255,255,.012) 40px, rgba(255,255,255,.012) 41px
+  );
+  pointer-events: none;
+}
+.sb-team {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 1.35rem; font-weight: 900; letter-spacing: 1.5px;
+  color: #fff; text-shadow: 0 2px 8px rgba(0,0,0,.4);
+}
+.sb-vs { color: rgba(255,255,255,.45); font-size: .72rem; margin-top: 3px; }
+.sb-score-wrap { text-align: center; }
+.sb-lbl {
+  font-size: .6rem; color: rgba(255,255,255,.5);
+  text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 2px;
+}
+.sb-score {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 3rem; font-weight: 900; color: var(--nba-gold); line-height: 1;
+  text-shadow: 0 0 20px rgba(253,185,39,.4);
+}
+
+/* ══ PLAYER ITEMS ══ */
+.player-list { padding: 10px; }
+.pi {
+  background: var(--card-grad);
+  border: 1px solid var(--border);
+  border-radius: 14px; margin-bottom: 10px; overflow: hidden;
+  box-shadow: 0 2px 12px rgba(0,0,0,.15);
+  transition: border-color .15s;
+}
+
+@keyframes gFlash {
+  0%   { border-color: #00D278; box-shadow: 0 0 0 0 rgba(0,210,120,.7); }
+  40%  { border-color: #00D278; box-shadow: 0 0 0 6px rgba(0,210,120,.15); }
+  100% { border-color: var(--border); box-shadow: 0 2px 12px rgba(0,0,0,.15); }
+}
+.pi.flash { animation: gFlash .55s ease-out forwards; }
+
+/* Player header */
+.pi-hdr {
+  background: linear-gradient(90deg, rgba(23,64,139,.35), rgba(201,8,42,.1));
+  padding: 10px 12px;
+  display: flex; align-items: center; gap: 10px;
+  border-bottom: 1px solid var(--border);
+}
+[data-theme="light"] .pi-hdr {
+  background: linear-gradient(90deg, rgba(23,64,139,.08), rgba(201,8,42,.04));
+}
+
+.pi-badge {
+  width: 38px; height: 38px; border-radius: 9px; flex-shrink: 0;
+  background: var(--nba-blue);
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 900; font-size: 1rem; color: #fff;
+  border: 1.5px solid rgba(255,255,255,.15);
+  box-shadow: 0 2px 8px rgba(23,64,139,.4);
+}
+.pi-name {
+  font-weight: 600; font-size: .92rem; flex: 1;
+  min-width: 0; white-space: nowrap;
+  overflow: hidden; text-overflow: ellipsis;
+  color: var(--text);
+}
+/* pills */
+.pi-pills { display: flex; gap: 3px; flex-wrap: wrap; justify-content: flex-end; }
+.pill {
+  border-radius: 5px; padding: 2px 6px;
+  display: flex; align-items: baseline; gap: 2px;
+}
+.pill .pv { font-family: 'Barlow Condensed', sans-serif; font-weight: 900; font-size: .9rem; line-height: 1; }
+.pill .pk { font-size: .58rem; opacity: .85; }
+.pp  { background: var(--pts-bg);  color: var(--pts-c); }
+.prb { background: var(--reb-bg);  color: var(--reb-c); }
+.pa  { background: var(--ast-bg);  color: var(--ast-c); }
+.psl { background: var(--stl-bg);  color: var(--stl-c); }
+.pbk { background: var(--blk-bg);  color: var(--blk-c); }
+.pto { background: var(--to-bg);   color: var(--to-c); }
+.pfl { background: var(--foul-bg); color: var(--foul-c); }
+
+/* ══ ACTION BUTTONS ══ */
+.pi-acts { padding: 8px 8px 10px; }
+
+.pts-row { display: grid; grid-template-columns: repeat(3,1fr); gap: 7px; margin-bottom: 7px; }
+.pts-btn {
+  border: none; border-radius: 12px; padding: 14px 4px 10px;
+  cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 2px;
+  position: relative; overflow: hidden;
+  box-shadow: 0 3px 10px rgba(0,0,0,.25);
+}
+.pts-btn .pn {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 2.2rem; font-weight: 900; color: #fff; line-height: 1;
+  text-shadow: 0 2px 6px rgba(0,0,0,.3);
+}
+.pts-btn .pl { font-size: .6rem; color: rgba(255,255,255,.7); letter-spacing: .3px; }
+.b1 { background: var(--b1g); }
+.b2 { background: var(--b2g); }
+.b3 { background: var(--b3g); }
+
+.sec-row  { display: grid; grid-template-columns: repeat(4,1fr); gap: 5px; margin-bottom: 5px; }
+.neg-row  { display: grid; grid-template-columns: repeat(2,1fr); gap: 5px; margin-bottom: 5px; }
+
+.act-btn {
+  border: none; border-radius: 10px; padding: 10px 4px;
+  cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 2px;
+  position: relative; overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0,0,0,.2);
+}
+.act-btn .ai { font-size: 1.1rem; line-height: 1.1; }
+.act-btn .al { font-size: .6rem; color: rgba(255,255,255,.78); text-align: center; line-height: 1.25; }
+
+.b-reb  { background: var(--brebg); }
+.b-ast  { background: var(--bastg); }
+.b-stl  { background: var(--bstlg); }
+.b-blk  { background: var(--bblkg); }
+.b-to   { background: var(--btog); }
+.b-foul { background: var(--bfoulg); }
+.b-undo {
+  background: var(--bundog); width: 100%;
+  flex-direction: row; justify-content: center; gap: 7px;
+  padding: 9px; border-radius: 10px; margin-top: 3px;
+}
+
+/* button animations */
+@keyframes pop { 0%{transform:scale(1)} 32%{transform:scale(.74);filter:brightness(1.7)} 68%{transform:scale(1.08);filter:brightness(1.15)} 100%{transform:scale(1);filter:brightness(1)} }
+.popping { animation: pop .25s ease-out forwards; }
+.ripple  { position:absolute; border-radius:50%; background:rgba(255,255,255,.2); transform:scale(0); animation:rpl .42s linear forwards; pointer-events:none; }
+@keyframes rpl { to { transform:scale(5); opacity:0; } }
+
+/* ══ STATS TABLE ══ */
+.stats-wrap { padding: 10px; }
+.stats-card {
+  background: var(--card-grad);
+  border: 1px solid var(--border); border-radius: 14px; overflow: hidden;
+  box-shadow: 0 2px 16px rgba(0,0,0,.12);
+}
+.tbl-hdr {
+  background: linear-gradient(135deg, var(--nba-blue), #1A50A8);
+  padding: 11px 16px;
+  display: flex; align-items: center; gap: 8px;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 900; font-size: .88rem; letter-spacing: 2px;
+  text-transform: uppercase; color: #fff;
+}
+.tbl-hdr-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--nba-gold);
+  box-shadow: 0 0 6px var(--nba-gold);
+}
+.tbl-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+table { width: 100%; border-collapse: collapse; font-size: .78rem; }
+thead { background: rgba(23,64,139,.25); }
+[data-theme="light"] thead { background: rgba(23,64,139,.1); }
+th {
+  padding: 8px 9px; text-align: center;
+  color: var(--nba-gold); font-family: 'Barlow Condensed', sans-serif;
+  font-size: .73rem; letter-spacing: .5px; white-space: nowrap; font-weight: 800;
+}
+td { padding: 9px 9px; text-align: center; border-top: 1px solid var(--border); white-space: nowrap; color: var(--text); }
+tr:nth-child(even) td { background: var(--tbl-stripe); }
+tr:hover td { background: rgba(23,64,139,.08); }
+.td-name { text-align: start!important; font-weight: 600; padding-inline-start: 14px; }
+.td-num  { color: var(--nba-gold); font-family: 'Barlow Condensed', sans-serif; font-weight: 900; font-size: .92rem; }
+.td-pts  { color: var(--nba-gold); font-weight: 700; font-family: 'Barlow Condensed', sans-serif; font-size: 1rem; }
+.tfoot-row td { background: rgba(201,8,42,.07)!important; border-top: 2px solid var(--nba-red)!important; font-weight: 700; }
+.stats-acts { padding: 12px; text-align: center; }
+.btn-danger {
+  background: linear-gradient(135deg,#48000E,#980018);
+  color: #fff; border: none; padding: 11px 24px; border-radius: 10px;
+  cursor: pointer; font-family: inherit; font-weight: 600; font-size: .85rem;
+  box-shadow: 0 3px 12px rgba(200,0,20,.3);
+}
+
+/* ══ SHARE ══ */
+.share-wrap { padding: 10px; max-width: 700px; margin: 0 auto; }
+.share-card {
+  background: var(--card-grad);
+  border: 1px solid var(--border); border-radius: 14px; overflow: hidden;
+  margin-bottom: 10px; box-shadow: 0 2px 16px rgba(0,0,0,.12);
+}
+.share-hdr {
+  background: linear-gradient(135deg, #480010, #900018);
+  padding: 11px 16px; display: flex; align-items: center; gap: 8px;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 900; font-size: .88rem; letter-spacing: 2px;
+  text-transform: uppercase; color: #fff;
+}
+.share-body { padding: 14px; overflow-x: auto; }
+.sh-banner {
+  display: flex; align-items: center; gap: 8px;
+  margin-bottom: 12px; padding-bottom: 12px;
+  border-bottom: 1px solid var(--border); flex-wrap: wrap;
+}
+.sh-tname { font-family: 'Barlow Condensed', sans-serif; font-size: 1.2rem; font-weight: 900; color: var(--nba-gold); }
+.sh-vs { color: var(--text2); font-size: .78rem; }
+.sh-table { width: 100%; border-collapse: collapse; font-size: .74rem; }
+.sh-table th { background: var(--nba-blue); color: #fff; padding: 5px 7px; text-align: center; font-family: 'Barlow Condensed', sans-serif; font-size: .7rem; white-space: nowrap; }
+.sh-table td { padding: 5px 7px; text-align: center; border-bottom: 1px solid var(--border); color: var(--text); white-space: nowrap; }
+.sh-table tr:nth-child(even) td { background: var(--tbl-stripe); }
+.sh-pts  { color: var(--nba-gold)!important; font-weight: 700; font-family: 'Barlow Condensed', sans-serif; }
+.sh-name { text-align: start!important; font-weight: 600; }
+.sh-num  { color: var(--nba-red)!important; font-family: 'Barlow Condensed', sans-serif; font-weight: 900; }
+.sh-tot td { background: rgba(201,8,42,.06)!important; font-weight: 700; border-top: 2px solid var(--nba-red)!important; }
+.sh-footer { font-size: .64rem; color: var(--text2); margin-top: 8px; }
+.share-btns { padding: 10px; display: flex; gap: 8px; flex-wrap: wrap; }
+.btn-copy { background: var(--surface2); color: var(--text); border: 1.5px solid var(--border2); padding: 10px 18px; border-radius: 10px; cursor: pointer; font-family: inherit; font-weight: 600; font-size: .83rem; transition: all .2s; }
+.btn-copy:hover { border-color: var(--nba-blue); color: var(--nba-blue); }
+.btn-wa  { background: #25D366; color: #fff; border: none; padding: 10px 18px; border-radius: 10px; cursor: pointer; font-family: inherit; font-weight: 600; font-size: .83rem; }
+
+/* ══ TOAST ══ */
+#toast {
+  position: fixed;
+  bottom: max(22px, env(safe-area-inset-bottom));
+  left: 50%; transform: translateX(-50%);
+  background: linear-gradient(135deg, #00A855, #00C868);
+  color: #fff; padding: 10px 24px; border-radius: 24px;
+  font-weight: 600; font-size: .84rem; z-index: 999;
+  opacity: 0; transition: opacity .28s; pointer-events: none;
+  white-space: nowrap; box-shadow: 0 4px 16px rgba(0,180,80,.35);
+}
+#toast.show { opacity: 1; }
 </style>
 </head>
 <body>
 
-<header>
-  <div class="logo"><span>馃弨</span><span id="app-title">诪注拽讘 住讟讟讬住讟讬拽讜转</span></div>
-  <div class="header-right">
-    <button class="lang-btn active" onclick="setLang('he')" id="btn-he">注讘专讬转</button>
-    <button class="lang-btn" onclick="setLang('en')" id="btn-en">EN</button>
+<!-- HEADER -->
+<header class="hdr">
+  <div class="logo">
+    <span class="logo-icon">🏀</span>
+    <span id="app-title">STATS</span>
+    <span class="logo-nba">NBA</span>
+  </div>
+  <div class="hdr-right">
+    <button class="theme-tog" onclick="toggleTheme()" id="theme-btn">🌙</button>
+    <div class="lang-pill">
+      <button class="lang-btn active" onclick="setLang('he')" id="btn-he">עב׳</button>
+      <button class="lang-btn" onclick="setLang('en')" id="btn-en">EN</button>
+    </div>
   </div>
 </header>
 
-<div class="tabs">
-  <button class="tab-btn active" onclick="showTab('setup')" id="tab-setup">讛讙讚专讜转</button>
-  <button class="tab-btn" onclick="showTab('game')" id="tab-game">诪砖讞拽</button>
-  <button class="tab-btn" onclick="showTab('stats')" id="tab-stats">住讟讟讬住讟讬拽讛</button>
-  <button class="tab-btn" onclick="showTab('share')" id="tab-share">砖讬转讜祝</button>
+<!-- TABS -->
+<div class="tab-bar">
+  <button class="tab-btn active" onclick="showTab('setup')" id="tab-setup">הגדרות</button>
+  <button class="tab-btn" onclick="showTab('game')"  id="tab-game">משחק</button>
+  <button class="tab-btn" onclick="showTab('stats')" id="tab-stats">סטטיסטיקה</button>
+  <button class="tab-btn" onclick="showTab('share')" id="tab-share">שיתוף</button>
 </div>
 
 <main>
-  <!-- SETUP -->
-  <div id="sec-setup" class="section active">
-    <div class="setup-card">
-      <h2>馃弳 <span id="lbl-teaminfo">驻专讟讬 拽讘讜爪讛</span></h2>
-      <div class="input-group"><label id="lbl-teamname">砖诐 讛拽讘讜爪讛</label><input type="text" id="team-name" placeholder="诇讚讜讙诪讛: 讻讚讜专住诇 转诇 讗讘讬讘"/></div>
-      <div class="input-group"><label id="lbl-opp">讬专讬讘讛 (讗讜驻爪讬讜谞诇讬)</label><input type="text" id="opp-name" placeholder="砖诐 讛拽讘讜爪讛 讛讬专讬讘讛"/></div>
+<!-- ══ SETUP ══ -->
+<div id="sec-setup" class="section active">
+<div class="setup-wrap">
+  <div class="s-block">
+    <div class="s-block-title">🏆 <span id="lbl-ti">פרטי קבוצה</span></div>
+    <label class="f-lbl" id="lbl-tn">שם הקבוצה</label>
+    <input class="f-inp" type="text" id="team-name" placeholder="לדוגמה: ניר עציון"/>
+    <label class="f-lbl" id="lbl-op">יריבה (אופציונלי)</label>
+    <input class="f-inp" type="text" id="opp-name" placeholder="שם היריבה"/>
+  </div>
+  <div class="s-block">
+    <div class="pl-header">
+      <div class="s-block-title" style="margin-bottom:0">👕 <span id="lbl-pl">שחקנים</span></div>
+      <div class="pl-count" id="pl-count">0 / 15</div>
     </div>
-    <div class="setup-card">
-      <h2>馃憰 <span id="lbl-players">砖讞拽谞讬诐 (注讚 15)</span></h2>
-      <div id="players-container" class="players-grid"></div>
-      <div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap;">
-        <button class="btn-primary" onclick="addPlayerRow()" id="btn-add-player">+ 讛讜住祝 砖讞拽谉</button>
-        <button class="btn-primary" style="background:linear-gradient(135deg,#1565C0,#2979FF)" onclick="startGame()" id="btn-start">馃弨 讛转讞诇 诪砖讞拽</button>
-      </div>
+    <div class="p-col-labels" style="margin-top:12px" id="col-labels">
+      <span class="p-col-lbl" id="col-j">מספר חולצה</span>
+      <span class="p-col-lbl left" id="col-n">שם שחקן</span>
+      <span class="p-col-lbl"></span>
+    </div>
+    <div id="players-container"></div>
+    <div class="btn-row">
+      <button class="btn-primary" onclick="addPlayerRow()" id="btn-add">+ הוסף שחקן</button>
+      <button class="btn-secondary" onclick="startGame()" id="btn-start">🏀 התחל</button>
     </div>
   </div>
+</div>
+</div>
 
-  <!-- GAME -->
-  <div id="sec-game" class="section">
-    <div class="game-header">
-      <div>
-        <div id="game-team-name" class="team-title">拽讘讜爪讛</div>
-        <div id="game-vs" style="color:var(--muted);font-size:.82rem;margin-top:2px;"></div>
-      </div>
-      <div style="text-align:center">
-        <div style="font-size:.72rem;color:var(--muted)" id="lbl-total">住讛状讻 谞拽讜讚讜转</div>
-        <div id="total-score" class="total-score-display">0</div>
-      </div>
+<!-- ══ GAME ══ -->
+<div id="sec-game" class="section">
+  <div class="scoreboard">
+    <div>
+      <div class="sb-team" id="sb-team">קבוצה</div>
+      <div class="sb-vs" id="sb-vs"></div>
     </div>
-    <div id="player-cards" class="player-cards"></div>
+    <div class="sb-score-wrap">
+      <div class="sb-lbl" id="lbl-total">נקודות</div>
+      <div class="sb-score" id="total-score">0</div>
+    </div>
   </div>
+  <div class="player-list" id="player-list"></div>
+</div>
 
-  <!-- STATS -->
-  <div id="sec-stats" class="section">
-    <div class="stats-table-wrap">
+<!-- ══ STATS ══ -->
+<div id="sec-stats" class="section">
+<div class="stats-wrap">
+  <div class="stats-card">
+    <div class="tbl-hdr"><div class="tbl-hdr-dot"></div><span id="stats-title">סטטיסטיקה קבוצתית</span></div>
+    <div class="tbl-wrap">
       <table><thead><tr id="stats-head"></tr></thead><tbody id="stats-body"></tbody></table>
     </div>
-    <div style="margin-top:14px;text-align:center;">
-      <button class="btn-primary" onclick="resetGame()" style="background:linear-gradient(135deg,#7f1d1d,#b91c1c);font-size:.88rem;padding:10px 18px;" id="btn-reset">馃攧 讗讬驻讜住 诪砖讞拽</button>
-    </div>
   </div>
+  <div class="stats-acts">
+    <button class="btn-danger" onclick="resetGame()" id="btn-reset">🔄 איפוס משחק</button>
+  </div>
+</div>
+</div>
 
-  <!-- SHARE -->
-  <div id="sec-share" class="section">
-    <div class="share-section">
-      <h3 id="lbl-share">馃摛 砖转祝 讗转 讛转讜爪讗讜转</h3>
-      <div class="share-html-preview" id="share-html-preview"></div>
-      <div class="share-btns">
-        <button class="btn-share btn-copy" onclick="copyStats()" id="btn-copy">馃搵 讛注转拽 讟拽住讟</button>
-        <button class="btn-share btn-whatsapp" onclick="shareWhatsapp()" id="btn-wa">馃摫 WhatsApp</button>
-      </div>
-    </div>
+<!-- ══ SHARE ══ -->
+<div id="sec-share" class="section">
+<div class="share-wrap">
+  <div class="share-card">
+    <div class="share-hdr">📤 <span id="lbl-share">שתף תוצאות</span></div>
+    <div class="share-body" id="share-inner"></div>
   </div>
+  <div class="share-btns">
+    <button class="btn-copy" onclick="copyStats()" id="btn-copy">📋 העתק</button>
+    <button class="btn-wa"   onclick="shareWa()"   id="btn-wa">📱 WhatsApp</button>
+  </div>
+</div>
+</div>
 </main>
 
 <div id="toast"></div>
 
 <script>
-let lang='he', players=[], history=[], playerCount=0;
+/* ── STATE ── */
+let lang = 'he', players = [], history = [], playerCount = 0;
+let theme = localStorage.getItem('nba-theme') || 'dark';
+document.documentElement.setAttribute('data-theme', theme);
+document.getElementById('theme-btn').textContent = theme === 'dark' ? '☀️' : '🌙';
 
-const T={
+function toggleTheme(){
+  theme = theme === 'dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', theme);
+  document.getElementById('theme-btn').textContent = theme === 'dark' ? '☀️' : '🌙';
+  localStorage.setItem('nba-theme', theme);
+}
+
+/* ── TRANSLATIONS ── */
+const T = {
   he:{
-    appTitle:'诪注拽讘 住讟讟讬住讟讬拽讜转',
-    setupTab:'讛讙讚专讜转',gameTab:'诪砖讞拽',statsTab:'住讟讟讬住讟讬拽讛',shareTab:'砖讬转讜祝',
-    teaminfo:'驻专讟讬 拽讘讜爪讛',players:'砖讞拽谞讬诐 (注讚 15)',
-    teamname:'砖诐 讛拽讘讜爪讛',opp:'讬专讬讘讛 (讗讜驻爪讬讜谞诇讬)',
-    ph_team:'诇讚讜讙诪讛: 讻讚讜专住诇 转诇 讗讘讬讘',ph_opp:'砖诐 讛拽讘讜爪讛 讛讬专讬讘讛',ph_name:'砖诐...',
-    addPlayer:'+ 讛讜住祝 砖讞拽谉',start:'馃弨 讛转讞诇 诪砖讞拽',
-    total:'住讛状讻 谞拽讜讚讜转',vs:'诪讜诇',
-    PTS:'谞拽壮',REB:'专讬讘讗讜谞讚',AST:'讗住讬住讟',STL:'讞讟讬驻讛',
-    a_1pt:'1 谞拽讜讚讛',a_2pt:'2 谞拽讜讚讜转',a_3pt:'3 谞拽讜讚讜转',
-    a_reb:'专讬讘讗讜谞讚',a_ast:'讗住讬住讟',a_stl:'讞讟讬驻讛',
-    a_blk:'讙讙讜转',a_to:'讗讬讘讜讚',a_foul:'注讘讬专讛',a_undo:'讘讟诇',
-    th:['#','砖讞拽谉','谞拽壮','1驻','2驻','3驻','专讬','讗住','讞讟','讙讙','讗讬','注讘'],
-    mini_th:['谞拽壮','1驻','2驻','3驻','专讬','讗住','讞讟','讙讙','讗讬','注讘'],
-    share_th:['#','砖讞拽谉','谞拽壮','1驻','2驻','3驻','专讬','讗住','讞讟','讙讙','讗讬','注讘'],
-    reset:'馃攧 讗讬驻讜住',share:'馃摛 砖转祝 讗转 讛转讜爪讗讜转',
-    copy:'馃搵 讛注转拽 讟拽住讟',wa:'馃摫 WhatsApp',copied:'讛讜注转拽!',
-    myteam:'讛拽讘讜爪讛 砖诇讬',footer:'馃搳 诪注拽讘 住讟讟讬住讟讬拽讜转 讻讚讜专住诇 馃弨',
-    totalrow:'住讛状讻',undone:'讘讜讟诇',
+    appTitle:'STATS',
+    tabs:['הגדרות','משחק','סטטיסטיקה','שיתוף'],
+    ti:'פרטי קבוצה', pl:'שחקנים', tn:'שם הקבוצה', op:'יריבה (אופציונלי)',
+    ph_t:'לדוגמה: ניר עציון', ph_o:'שם היריבה', ph_n:'שם שחקן...',
+    colJ:'מספר חולצה', colN:'שם שחקן',
+    add:'+ הוסף שחקן', start:'🏀 התחל', total:'נקודות', vs:'מול',
+    a1:'1 נק׳', a2:'2 נק׳', a3:'3 נק׳',
+    reb:'ריבאונד', ast:'אסיסט', stl:'חטיפה', blk:'גגות', to:'איבוד', foul:'עבירה', undo:'בטל',
+    th:['#','שחקן','נק׳','1פ','2פ','3פ','רי','אס','חט','גג','אי','עב'],
+    sth:['#','שחקן','נק׳','1פ','2פ','3פ','רי','אס','חט','גג','אי','עב'],
+    reset:'🔄 איפוס', share:'שתף תוצאות', copy:'📋 העתק', wa:'📱 WhatsApp',
+    copied:'הועתק!', myteam:'הקבוצה שלי', footer:'📊 NBA Stats Tracker',
+    tot:'סה״כ', undone:'בוטל', stTitle:'סטטיסטיקה קבוצתית',
+    PTS:'נק׳',REB:'רי',AST:'אס',STL:'חט',BLK:'גג',TO:'אי',FL:'עב',
   },
   en:{
-    appTitle:'Stats Tracker',
-    setupTab:'Setup',gameTab:'Game',statsTab:'Stats',shareTab:'Share',
-    teaminfo:'Team Info',players:'Players (up to 15)',
-    teamname:'Team Name',opp:'Opponent (optional)',
-    ph_team:'e.g. City Bulls',ph_opp:'Opponent team name',ph_name:'Name...',
-    addPlayer:'+ Add Player',start:'馃弨 Start Game',
-    total:'Total Points',vs:'vs',
-    PTS:'PTS',REB:'REB',AST:'AST',STL:'STL',
-    a_1pt:'1 Pt',a_2pt:'2 Pts',a_3pt:'3 Pts',
-    a_reb:'Rebound',a_ast:'Assist',a_stl:'Steal',
-    a_blk:'Block',a_to:'Turnover',a_foul:'Foul',a_undo:'Undo',
+    appTitle:'STATS',
+    tabs:['Setup','Game','Stats','Share'],
+    ti:'Team Info', pl:'Players', tn:'Team Name', op:'Opponent (optional)',
+    ph_t:'e.g. City Bulls', ph_o:'Opponent name', ph_n:'Player name...',
+    colJ:'Jersey #', colN:'Player Name',
+    add:'+ Add Player', start:'🏀 Start', total:'Points', vs:'vs',
+    a1:'1 Pt', a2:'2 Pts', a3:'3 Pts',
+    reb:'Rebound', ast:'Assist', stl:'Steal', blk:'Block', to:'Turnover', foul:'Foul', undo:'Undo',
     th:['#','Player','PTS','1P','2P','3P','REB','AST','STL','BLK','TO','F'],
-    mini_th:['PTS','1P','2P','3P','REB','AST','STL','BLK','TO','F'],
-    share_th:['#','Player','PTS','1P','2P','3P','REB','AST','STL','BLK','TO','F'],
-    reset:'馃攧 Reset',share:'馃摛 Share Results',
-    copy:'馃搵 Copy Text',wa:'馃摫 WhatsApp',copied:'Copied!',
-    myteam:'My Team',footer:'馃搳 Basketball Stats Tracker 馃弨',
-    totalrow:'Total',undone:'Undone',
+    sth:['#','Player','PTS','1P','2P','3P','REB','AST','STL','BLK','TO','F'],
+    reset:'🔄 Reset', share:'Share Results', copy:'📋 Copy', wa:'📱 WhatsApp',
+    copied:'Copied!', myteam:'My Team', footer:'📊 NBA Stats Tracker',
+    tot:'Total', undone:'Undone', stTitle:'Team Stats',
+    PTS:'PTS',REB:'REB',AST:'AST',STL:'STL',BLK:'BLK',TO:'TO',FL:'F',
   }
 };
 
+/* ── LANG ── */
 function setLang(l){
-  lang=l;
-  document.documentElement.lang=l; document.body.lang=l;
-  document.documentElement.dir=l==='he'?'rtl':'ltr';
-  document.getElementById('btn-he').classList.toggle('active',l==='he');
-  document.getElementById('btn-en').classList.toggle('active',l==='en');
-  applyLang(); rebuildPlayerCards(); renderStats(); renderShare();
+  lang = l;
+  document.documentElement.lang = l;
+  document.body.lang = l;
+  document.documentElement.dir = l === 'he' ? 'rtl' : 'ltr';
+  document.getElementById('btn-he').classList.toggle('active', l==='he');
+  document.getElementById('btn-en').classList.toggle('active', l==='en');
+  applyLang(); rebuildGame(); renderStats(); renderShare();
 }
-
 function applyLang(){
-  const t=T[lang];
-  const ids={
-    'app-title':t.appTitle,'tab-setup':t.setupTab,'tab-game':t.gameTab,
-    'tab-stats':t.statsTab,'tab-share':t.shareTab,'lbl-teaminfo':t.teaminfo,
-    'lbl-players':t.players,'lbl-teamname':t.teamname,'lbl-opp':t.opp,
-    'lbl-total':t.total,'lbl-share':t.share,'btn-add-player':t.addPlayer,
-    'btn-start':t.start,'btn-reset':t.reset,'btn-copy':t.copy,'btn-wa':t.wa
+  const t = T[lang];
+  const m = {
+    'app-title':t.appTitle, 'tab-setup':t.tabs[0], 'tab-game':t.tabs[1],
+    'tab-stats':t.tabs[2],  'tab-share':t.tabs[3],
+    'lbl-ti':t.ti, 'lbl-pl':t.pl, 'lbl-tn':t.tn, 'lbl-op':t.op,
+    'lbl-total':t.total, 'lbl-share':t.share,
+    'btn-add':t.add, 'btn-start':t.start, 'btn-reset':t.reset,
+    'btn-copy':t.copy, 'btn-wa':t.wa, 'stats-title':t.stTitle,
+    'col-j':t.colJ, 'col-n':t.colN,
   };
-  Object.entries(ids).forEach(([id,txt])=>{const el=document.getElementById(id);if(el)el.textContent=txt;});
-  const tn=document.getElementById('team-name'); if(tn) tn.placeholder=t.ph_team;
-  const on=document.getElementById('opp-name'); if(on) on.placeholder=t.ph_opp;
-  document.querySelectorAll('.player-name').forEach(el=>el.placeholder=t.ph_name);
+  Object.entries(m).forEach(([id,v]) => { const el = document.getElementById(id); if(el) el.textContent = v; });
+  const tn = document.getElementById('team-name'); if(tn) tn.placeholder = t.ph_t;
+  const on = document.getElementById('opp-name');  if(on) on.placeholder = t.ph_o;
+  document.querySelectorAll('.nm-inp').forEach(el => el.placeholder = t.ph_n);
 }
-
 function showTab(name){
-  ['setup','game','stats','share'].forEach(t=>{
-    document.getElementById('sec-'+t).classList.toggle('active',t===name);
-    document.getElementById('tab-'+t).classList.toggle('active',t===name);
+  ['setup','game','stats','share'].forEach(k => {
+    document.getElementById('sec-'+k).classList.toggle('active', k===name);
+    document.getElementById('tab-'+k).classList.toggle('active', k===name);
   });
   if(name==='stats') renderStats();
   if(name==='share') renderShare();
 }
+function updCount(){ const b = document.getElementById('pl-count'); if(b) b.textContent = playerCount + ' / 15'; }
 
+/* ── SETUP ── */
 function addPlayerRow(){
-  if(playerCount>=15) return;
-  const c=document.getElementById('players-container');
-  const d=document.createElement('div'); d.className='player-input-row';
-  d.innerHTML=`
-    <input class="player-num" type="number" placeholder="#" min="0" max="99"
-      style="width:52px;flex-shrink:0;padding:10px 6px;text-align:center;background:var(--dark);border:1px solid var(--border);border-radius:8px;color:var(--orange);font-family:'Oswald',sans-serif;font-weight:700;font-size:1rem;"/>
-    <input class="player-name" type="text" placeholder="${T[lang].ph_name}"
-      style="flex:1;padding:10px;background:var(--dark);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:inherit;font-size:.9rem;"/>
-    <button onclick="this.parentElement.remove();playerCount--;"
-      style="background:none;border:none;color:var(--red);cursor:pointer;font-size:1.2rem;padding:4px;">鉁?/button>`;
-  c.appendChild(d); playerCount++;
+  if(playerCount >= 15) return;
+  const c = document.getElementById('players-container');
+  const d = document.createElement('div'); d.className = 'p-row';
+  d.innerHTML = `
+    <div class="jw">
+      <span class="hash">#</span>
+      <input class="j-inp" type="number" placeholder="00" min="0" max="99" inputmode="numeric"/>
+    </div>
+    <input class="nm-inp" type="text" placeholder="${T[lang].ph_n}"/>
+    <button class="del-btn" onclick="this.closest('.p-row').remove();playerCount--;updCount();">✕</button>`;
+  c.appendChild(d); playerCount++; updCount();
+  d.querySelector('.nm-inp').focus();
 }
-
 function startGame(){
-  players=[];
-  document.querySelectorAll('.player-input-row').forEach(row=>{
-    const num=row.querySelector('.player-num').value.trim();
-    const name=row.querySelector('.player-name').value.trim();
+  players = [];
+  document.querySelectorAll('.p-row').forEach(r => {
+    const num = r.querySelector('.j-inp').value.trim();
+    const name = r.querySelector('.nm-inp').value.trim();
     if(name) players.push({num:num||'?',name,pts:0,p1:0,p2:0,p3:0,reb:0,ast:0,stl:0,blk:0,to:0,foul:0});
   });
-  if(!players.length){alert(lang==='he'?'讛讜住祝 诇驻讞讜转 砖讞拽谉 讗讞讚':'Add at least one player');return;}
-  history=[];
-  const teamName=document.getElementById('team-name').value||T[lang].myteam;
-  const opp=document.getElementById('opp-name').value;
-  document.getElementById('game-team-name').textContent=teamName;
-  document.getElementById('game-vs').textContent=opp?T[lang].vs+' '+opp:'';
-  rebuildPlayerCards(); updateTotalScore(); showTab('game');
+  if(!players.length){ alert(lang==='he'?'הוסף לפחות שחקן אחד':'Add at least one player'); return; }
+  history = [];
+  const tn = document.getElementById('team-name').value || T[lang].myteam;
+  const op = document.getElementById('opp-name').value;
+  document.getElementById('sb-team').textContent = tn;
+  document.getElementById('sb-vs').textContent = op ? T[lang].vs + ' ' + op : '';
+  rebuildGame(); updateTotal(); showTab('game');
 }
 
-function rebuildPlayerCards(){
-  const c=document.getElementById('player-cards'); c.innerHTML='';
-  players.forEach((p,i)=>c.appendChild(buildCard(p,i)));
+/* ── GAME ── */
+function rebuildGame(){
+  const list = document.getElementById('player-list'); list.innerHTML = '';
+  players.forEach((_,i) => list.appendChild(buildItem(i)));
 }
-
-function buildCard(p,i){
-  const t=T[lang];
-  const div=document.createElement('div'); div.className='player-card'; div.id='card-'+i;
-  const actions=[
-    {cls:'btn-1pt',icon:'馃',lbl:t.a_1pt,fn:`addStat(${i},'p1',1,1)`},
-    {cls:'btn-2pt',icon:'鉁岋笍',lbl:t.a_2pt,fn:`addStat(${i},'p2',1,2)`},
-    {cls:'btn-3pt',icon:'馃',lbl:t.a_3pt,fn:`addStat(${i},'p3',1,3)`},
-    {cls:'btn-reb',icon:'馃挭',lbl:t.a_reb,fn:`addStat(${i},'reb',1,0)`},
-    {cls:'btn-ast',icon:'馃幆',lbl:t.a_ast,fn:`addStat(${i},'ast',1,0)`},
-    {cls:'btn-stl',icon:'馃',lbl:t.a_stl,fn:`addStat(${i},'stl',1,0)`},
-    {cls:'btn-blk',icon:'馃洝锔?,lbl:t.a_blk,fn:`addStat(${i},'blk',1,0)`},
-    {cls:'btn-to', icon:'馃槵',lbl:t.a_to, fn:`addStat(${i},'to',1,0)`},
-    {cls:'btn-foul',icon:'鉁?,lbl:t.a_foul,fn:`addStat(${i},'foul',1,0)`},
-    {cls:'btn-undo',icon:'鈫╋笍',lbl:t.a_undo,fn:`undoLast(${i})`},
+function buildItem(i){
+  const p = players[i], t = T[lang];
+  const div = document.createElement('div'); div.className = 'pi'; div.id = 'pi-'+i;
+  div.innerHTML = `
+    <div class="pi-hdr">
+      <div class="pi-badge">${p.num}</div>
+      <div class="pi-name">${p.name}</div>
+      <div class="pi-pills" id="pills-${i}"></div>
+    </div>
+    <div class="pi-acts">
+      <div class="pts-row">
+        <button class="pts-btn b1" onclick="addStat(${i},'p1',1,1)"><span class="pn">1</span><span class="pl">${t.a1}</span></button>
+        <button class="pts-btn b2" onclick="addStat(${i},'p2',1,2)"><span class="pn">2</span><span class="pl">${t.a2}</span></button>
+        <button class="pts-btn b3" onclick="addStat(${i},'p3',1,3)"><span class="pn">3</span><span class="pl">${t.a3}</span></button>
+      </div>
+      <div class="sec-row">
+        <button class="act-btn b-reb" onclick="addStat(${i},'reb',1,0)"><span class="ai">💪</span><span class="al">${t.reb}</span></button>
+        <button class="act-btn b-ast" onclick="addStat(${i},'ast',1,0)"><span class="ai">🎯</span><span class="al">${t.ast}</span></button>
+        <button class="act-btn b-stl" onclick="addStat(${i},'stl',1,0)"><span class="ai">🫴</span><span class="al">${t.stl}</span></button>
+        <button class="act-btn b-blk" onclick="addStat(${i},'blk',1,0)"><span class="ai">🛡️</span><span class="al">${t.blk}</span></button>
+      </div>
+      <div class="neg-row">
+        <button class="act-btn b-to"   onclick="addStat(${i},'to',1,0)"><span class="ai">😬</span><span class="al">${t.to}</span></button>
+        <button class="act-btn b-foul" onclick="addStat(${i},'foul',1,0)"><span class="ai">✋</span><span class="al">${t.foul}</span></button>
+      </div>
+      <button class="act-btn b-undo" onclick="undoLast(${i})"><span class="ai">↩️</span><span class="al" style="font-size:.7rem">${t.undo}</span></button>
+    </div>`;
+  updatePills(i); return div;
+}
+function updatePills(i){
+  const p = players[i], t = T[lang], el = document.getElementById('pills-'+i); if(!el) return;
+  const defs = [
+    {v:p.pts,k:t.PTS,c:'pp'},{v:p.reb,k:t.REB,c:'prb'},
+    {v:p.ast,k:t.AST,c:'pa'},{v:p.stl,k:t.STL,c:'psl'},
+    {v:p.blk,k:t.BLK,c:'pbk'},{v:p.to,k:t.TO,c:'pto'},
+    {v:p.foul,k:t.FL,c:'pfl'},
   ];
-  div.innerHTML=`
-    <div class="player-card-header">
-      <div class="jersey-num">${p.num}</div>
-      <div class="player-name-display">${p.name}</div>
-      <div class="player-totals" id="totals-${i}"></div>
-    </div>
-    <div class="player-actions">
-      ${actions.map(a=>`<button class="action-btn ${a.cls}" onclick="${a.fn}">
-        <span class="icon">${a.icon}</span><span class="label">${a.lbl}</span>
-      </button>`).join('')}
-    </div>
-    <div class="player-mini-stats" id="mini-${i}"></div>`;
-  updateCardTotals(i); updateMiniStats(i);
-  return div;
+  el.innerHTML = defs.filter(d=>d.v>0).map(d=>`<div class="pill ${d.c}"><span class="pv">${d.v}</span><span class="pk">${d.k}</span></div>`).join('');
 }
-
-function updateCardTotals(i){
-  const p=players[i],t=T[lang],el=document.getElementById('totals-'+i);
-  if(!el) return;
-  el.innerHTML=`
-    <div class="stat-badge"><span class="val stat-pts">${p.pts}</span><span class="lbl">${t.PTS}</span></div>
-    <div class="stat-badge"><span class="val stat-reb">${p.reb}</span><span class="lbl">${t.REB}</span></div>
-    <div class="stat-badge"><span class="val stat-ast">${p.ast}</span><span class="lbl">${t.AST}</span></div>
-    <div class="stat-badge"><span class="val stat-stl">${p.stl}</span><span class="lbl">${t.STL}</span></div>`;
-}
-
-function updateMiniStats(i){
-  const p=players[i],t=T[lang],el=document.getElementById('mini-'+i);
-  if(!el) return;
-  el.innerHTML=`
-    <table class="mini-stats-table">
-      <thead><tr>${t.mini_th.map(h=>`<th>${h}</th>`).join('')}</tr></thead>
-      <tbody><tr>
-        <td class="mini-pts">${p.pts}</td>
-        <td>${p.p1}</td><td>${p.p2}</td><td>${p.p3}</td>
-        <td class="mini-reb">${p.reb}</td>
-        <td class="mini-ast">${p.ast}</td>
-        <td class="mini-stl">${p.stl}</td>
-        <td class="mini-blk">${p.blk}</td>
-        <td class="mini-to">${p.to}</td>
-        <td class="mini-foul">${p.foul}</td>
-      </tr></tbody>
-    </table>`;
-}
-
 function addStat(i,stat,delta,pts){
-  players[i][stat]+=delta; players[i].pts+=pts;
-  history.push({i,prev:{...players[i],[stat]:players[i][stat]-delta,pts:players[i].pts-pts}});
-  updateCardTotals(i); updateMiniStats(i); updateTotalScore();
-  // card flash
-  const card=document.getElementById('card-'+i);
-  card.classList.remove('flash'); void card.offsetWidth; card.classList.add('flash');
-  card.addEventListener('animationend',()=>card.classList.remove('flash'),{once:true});
+  const snap = {...players[i]};
+  players[i][stat] += delta; players[i].pts += pts;
+  history.push({i,snap}); updatePills(i); updateTotal();
+  const el = document.getElementById('pi-'+i);
+  el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash');
+  el.addEventListener('animationend', ()=>el.classList.remove('flash'), {once:true});
 }
-
-// Button pop + ripple via delegation
-document.addEventListener('click',e=>{
-  const btn=e.target.closest('.action-btn');
-  if(!btn) return;
+document.addEventListener('click', e => {
+  const btn = e.target.closest('.pts-btn,.act-btn'); if(!btn) return;
   btn.classList.remove('popping'); void btn.offsetWidth; btn.classList.add('popping');
-  btn.addEventListener('animationend',()=>btn.classList.remove('popping'),{once:true});
-  const r=document.createElement('span'); r.className='ripple';
-  const sz=Math.max(btn.offsetWidth,btn.offsetHeight);
-  r.style.cssText=`width:${sz}px;height:${sz}px;left:${btn.offsetWidth/2-sz/2}px;top:${btn.offsetHeight/2-sz/2}px`;
-  btn.appendChild(r); setTimeout(()=>r.remove(),460);
+  btn.addEventListener('animationend', ()=>btn.classList.remove('popping'), {once:true});
+  const r = document.createElement('span'); r.className = 'ripple';
+  const sz = Math.max(btn.offsetWidth, btn.offsetHeight);
+  r.style.cssText = `width:${sz}px;height:${sz}px;left:${btn.offsetWidth/2-sz/2}px;top:${btn.offsetHeight/2-sz/2}px`;
+  btn.appendChild(r); setTimeout(()=>r.remove(), 450);
 });
-
 function undoLast(i){
   for(let h=history.length-1;h>=0;h--){
-    if(history[h].i===i){
-      players[i]={...history[h].prev}; history.splice(h,1);
-      updateCardTotals(i); updateMiniStats(i); updateTotalScore();
-      showToast('鈫╋笍 '+T[lang].undone); return;
-    }
+    if(history[h].i===i){ players[i]={...history[h].snap}; history.splice(h,1); updatePills(i); updateTotal(); showToast('↩️ '+T[lang].undone); return; }
   }
 }
+function updateTotal(){ document.getElementById('total-score').textContent = players.reduce((s,p)=>s+p.pts,0); }
+function totals(){ return players.reduce((a,p)=>({pts:a.pts+p.pts,p1:a.p1+p.p1,p2:a.p2+p.p2,p3:a.p3+p.p3,reb:a.reb+p.reb,ast:a.ast+p.ast,stl:a.stl+p.stl,blk:a.blk+p.blk,to:a.to+p.to,foul:a.foul+p.foul}),{pts:0,p1:0,p2:0,p3:0,reb:0,ast:0,stl:0,blk:0,to:0,foul:0}); }
 
-function updateTotalScore(){
-  document.getElementById('total-score').textContent=players.reduce((s,p)=>s+p.pts,0);
-}
-
+/* ── STATS ── */
 function renderStats(){
-  const t=T[lang];
-  document.getElementById('stats-head').innerHTML=t.th.map(h=>`<th>${h}</th>`).join('');
-  const body=document.getElementById('stats-body'); body.innerHTML='';
-  [...players].sort((a,b)=>b.pts-a.pts).forEach(p=>{
-    const tr=document.createElement('tr');
-    tr.innerHTML=`<td class="td-num">${p.num}</td><td class="td-name">${p.name}</td>
-      <td class="td-pts">${p.pts}</td><td>${p.p1}</td><td>${p.p2}</td><td>${p.p3}</td>
-      <td>${p.reb}</td><td>${p.ast}</td><td>${p.stl}</td><td>${p.blk}</td><td>${p.to}</td><td>${p.foul}</td>`;
+  const t = T[lang];
+  document.getElementById('stats-head').innerHTML = t.th.map(h=>`<th>${h}</th>`).join('');
+  const body = document.getElementById('stats-body'); body.innerHTML = '';
+  [...players].sort((a,b)=>b.pts-a.pts).forEach(p => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td class="td-num">${p.num}</td><td class="td-name">${p.name}</td><td class="td-pts">${p.pts}</td><td>${p.p1}</td><td>${p.p2}</td><td>${p.p3}</td><td>${p.reb}</td><td>${p.ast}</td><td>${p.stl}</td><td>${p.blk}</td><td>${p.to}</td><td>${p.foul}</td>`;
     body.appendChild(tr);
   });
-  const tot=players.reduce((a,p)=>({pts:a.pts+p.pts,p1:a.p1+p.p1,p2:a.p2+p.p2,p3:a.p3+p.p3,reb:a.reb+p.reb,ast:a.ast+p.ast,stl:a.stl+p.stl,blk:a.blk+p.blk,to:a.to+p.to,foul:a.foul+p.foul}),{pts:0,p1:0,p2:0,p3:0,reb:0,ast:0,stl:0,blk:0,to:0,foul:0});
-  const tf=document.createElement('tr');
-  tf.style.cssText='background:var(--dark3);font-weight:700;border-top:2px solid var(--orange)';
-  tf.innerHTML=`<td colspan="2" style="text-align:${lang==='he'?'right':'left'};padding-inline-start:12px;color:var(--orange)">${t.totalrow}</td>
-    <td class="td-pts">${tot.pts}</td><td>${tot.p1}</td><td>${tot.p2}</td><td>${tot.p3}</td>
-    <td>${tot.reb}</td><td>${tot.ast}</td><td>${tot.stl}</td><td>${tot.blk}</td><td>${tot.to}</td><td>${tot.foul}</td>`;
+  const tot = totals();
+  const tf = document.createElement('tr'); tf.className = 'tfoot-row';
+  tf.innerHTML = `<td colspan="2" class="td-name" style="color:var(--nba-gold)">${t.tot}</td><td class="td-pts">${tot.pts}</td><td>${tot.p1}</td><td>${tot.p2}</td><td>${tot.p3}</td><td>${tot.reb}</td><td>${tot.ast}</td><td>${tot.stl}</td><td>${tot.blk}</td><td>${tot.to}</td><td>${tot.foul}</td>`;
   body.appendChild(tf);
 }
 
+/* ── SHARE ── */
 function renderShare(){
-  const t=T[lang];
-  const teamName=document.getElementById('team-name').value||T[lang].myteam;
-  const opp=document.getElementById('opp-name').value;
-  const sorted=[...players].sort((a,b)=>b.pts-a.pts);
-  const tot=players.reduce((a,p)=>({pts:a.pts+p.pts,p1:a.p1+p.p1,p2:a.p2+p.p2,p3:a.p3+p.p3,reb:a.reb+p.reb,ast:a.ast+p.ast,stl:a.stl+p.stl,blk:a.blk+p.blk,to:a.to+p.to,foul:a.foul+p.foul}),{pts:0,p1:0,p2:0,p3:0,reb:0,ast:0,stl:0,blk:0,to:0,foul:0});
-  const rows=sorted.map(p=>`<tr>
-    <td class="s-num">${p.num}</td><td class="s-name">${p.name}</td>
-    <td class="s-pts">${p.pts}</td><td>${p.p1}</td><td>${p.p2}</td><td>${p.p3}</td>
-    <td>${p.reb}</td><td>${p.ast}</td><td>${p.stl}</td><td>${p.blk}</td><td>${p.to}</td><td>${p.foul}</td>
-  </tr>`).join('');
-  document.getElementById('share-html-preview').innerHTML=`
-    <div class="share-title-row">
-      <span style="font-size:1.3rem">馃弨</span>
-      <span class="share-team-title">${teamName}</span>
-      ${opp?`<span class="share-vs">${T[lang].vs} ${opp}</span>`:''}
-    </div>
-    <table class="share-table" dir="${lang==='he'?'rtl':'ltr'}">
-      <thead><tr>${t.share_th.map(h=>`<th>${h}</th>`).join('')}</tr></thead>
-      <tbody>
-        ${rows}
-        <tr class="s-total">
-          <td colspan="2" style="text-align:${lang==='he'?'right':'left'};padding-inline-start:8px;color:#FF6B00;font-weight:700">${t.totalrow}</td>
-          <td class="s-pts">${tot.pts}</td><td>${tot.p1}</td><td>${tot.p2}</td><td>${tot.p3}</td>
-          <td>${tot.reb}</td><td>${tot.ast}</td><td>${tot.stl}</td><td>${tot.blk}</td><td>${tot.to}</td><td>${tot.foul}</td>
-        </tr>
-      </tbody>
+  const t = T[lang], tn = document.getElementById('team-name').value || T[lang].myteam;
+  const op = document.getElementById('opp-name').value, tot = totals();
+  const rows = [...players].sort((a,b)=>b.pts-a.pts).map(p=>`<tr><td class="sh-num">${p.num}</td><td class="sh-name">${p.name}</td><td class="sh-pts">${p.pts}</td><td>${p.p1}</td><td>${p.p2}</td><td>${p.p3}</td><td>${p.reb}</td><td>${p.ast}</td><td>${p.stl}</td><td>${p.blk}</td><td>${p.to}</td><td>${p.foul}</td></tr>`).join('');
+  document.getElementById('share-inner').innerHTML = `
+    <div class="sh-banner"><span style="font-size:1.3rem">🏀</span><span class="sh-tname">${tn}</span>${op?`<span class="sh-vs">${T[lang].vs} ${op}</span>`:''}</div>
+    <table class="sh-table" dir="${lang==='he'?'rtl':'ltr'}">
+      <thead><tr>${t.sth.map(h=>`<th>${h}</th>`).join('')}</tr></thead>
+      <tbody>${rows}<tr class="sh-tot"><td colspan="2" class="sh-name" style="color:var(--nba-gold)">${t.tot}</td><td class="sh-pts">${tot.pts}</td><td>${tot.p1}</td><td>${tot.p2}</td><td>${tot.p3}</td><td>${tot.reb}</td><td>${tot.ast}</td><td>${tot.stl}</td><td>${tot.blk}</td><td>${tot.to}</td><td>${tot.foul}</td></tr></tbody>
     </table>
-    <div style="margin-top:8px;font-size:.72rem;color:var(--muted)">${T[lang].footer}</div>`;
+    <div class="sh-footer">${T[lang].footer}</div>`;
 }
-
-/* WhatsApp 鈥?monospace box table */
 function buildShareText(){
-  const t=T[lang]; const isHe=lang==='he';
-  const teamName=document.getElementById('team-name').value||T[lang].myteam;
-  const opp=document.getElementById('opp-name').value;
-  const cols=isHe?['#','砖诐','谞拽','1驻','2驻','3驻','专讬','讗住','讞讟','讙讙','讗讬','注讘']:['#','Name','PTS','1P','2P','3P','REB','AST','STL','BLK','TO','F'];
-  const dataRows=[...players].sort((a,b)=>b.pts-a.pts).map(p=>[p.num,p.name.substring(0,9),p.pts,p.p1,p.p2,p.p3,p.reb,p.ast,p.stl,p.blk,p.to,p.foul]);
-  const tot=players.reduce((a,p)=>({pts:a.pts+p.pts,p1:a.p1+p.p1,p2:a.p2+p.p2,p3:a.p3+p.p3,reb:a.reb+p.reb,ast:a.ast+p.ast,stl:a.stl+p.stl,blk:a.blk+p.blk,to:a.to+p.to,foul:a.foul+p.foul}),{pts:0,p1:0,p2:0,p3:0,reb:0,ast:0,stl:0,blk:0,to:0,foul:0});
-  const totRow=[t.totalrow,'',tot.pts,tot.p1,tot.p2,tot.p3,tot.reb,tot.ast,tot.stl,tot.blk,tot.to,tot.foul];
-  const all=[cols,...dataRows,totRow];
-  const widths=cols.map((_,ci)=>Math.max(...all.map(r=>String(r[ci]).length)));
+  const t=T[lang],isHe=lang==='he',tn=document.getElementById('team-name').value||T[lang].myteam,op=document.getElementById('opp-name').value;
+  const cols=isHe?['#','שם','נק','1פ','2פ','3פ','רי','אס','חט','גג','אי','עב']:['#','Name','PTS','1P','2P','3P','REB','AST','STL','BLK','TO','F'];
+  const dR=[...players].sort((a,b)=>b.pts-a.pts).map(p=>[p.num,p.name.substring(0,9),p.pts,p.p1,p.p2,p.p3,p.reb,p.ast,p.stl,p.blk,p.to,p.foul]);
+  const tot=totals(),tR=[t.tot,'',tot.pts,tot.p1,tot.p2,tot.p3,tot.reb,tot.ast,tot.stl,tot.blk,tot.to,tot.foul];
+  const all=[cols,...dR,tR];
+  const W=cols.map((_,ci)=>Math.max(...all.map(r=>String(r[ci]).length)));
   const pad=(v,w)=>String(v).padEnd(w);
-  const fmtRow=r=>'鈹?+widths.map((w,ci)=>` ${pad(r[ci],w)} `).join('鈹?)+'鈹?;
-  const hLine=(l,m,r)=>l+widths.map(w=>'鈹€'.repeat(w+2)).join(m)+r;
-  let txt=`馃弨 ${teamName}`;
-  if(opp) txt+=`\n${isHe?'诪讜诇':'vs'}: ${opp}`;
-  txt+='\n\n';
-  txt+=hLine('鈹?,'鈹?,'鈹?)+'\n';
-  txt+=fmtRow(cols)+'\n';
-  txt+=hLine('鈹?,'鈹?,'鈹?)+'\n';
-  dataRows.forEach(r=>{txt+=fmtRow(r)+'\n';});
-  txt+=hLine('鈹?,'鈹?,'鈹?)+'\n';
-  txt+=fmtRow(totRow)+'\n';
-  txt+=hLine('鈹?,'鈹?,'鈹?)+'\n';
-  txt+=T[lang].footer;
+  const row=r=>'|'+W.map((w,ci)=>` ${pad(r[ci],w)} `).join('|')+'|';
+  const line=()=>'+'+W.map(w=>'-'.repeat(w+2)).join('+')+'+';
+  let txt=`🏀 ${tn}`;if(op)txt+=`\n${isHe?'מול':'vs'}: ${op}`;
+  txt+='\n\n'+line()+'\n'+row(cols)+'\n'+line()+'\n';
+  dR.forEach(r=>{txt+=row(r)+'\n';});
+  txt+=line()+'\n'+row(tR)+'\n'+line()+'\n'+T[lang].footer;
   return txt;
 }
-
 function copyStats(){
   const text=buildShareText();
-  if(navigator.clipboard){navigator.clipboard.writeText(text).then(()=>showToast('馃搵 '+T[lang].copied));}
-  else{const ta=document.createElement('textarea');ta.value=text;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);showToast('馃搵 '+T[lang].copied);}
+  if(navigator.clipboard){navigator.clipboard.writeText(text).then(()=>showToast('📋 '+T[lang].copied));}
+  else{const ta=document.createElement('textarea');ta.value=text;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);showToast('📋 '+T[lang].copied);}
 }
-function shareWhatsapp(){window.open('https://wa.me/?text='+encodeURIComponent(buildShareText()),'_blank');}
-function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2000);}
+function shareWa(){ window.open('https://wa.me/?text='+encodeURIComponent(buildShareText()),'_blank'); }
+function showToast(msg){ const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2200); }
 function resetGame(){
-  if(!confirm(lang==='he'?'诇讗驻住 讗转 讻诇 讛谞转讜谞讬诐?':'Reset all data?')) return;
+  if(!confirm(lang==='he'?'לאפס את כל הנתונים?':'Reset all data?')) return;
   players.forEach(p=>{p.pts=p.p1=p.p2=p.p3=p.reb=p.ast=p.stl=p.blk=p.to=p.foul=0;});
-  history=[];rebuildPlayerCards();updateTotalScore();showTab('game');
+  history=[]; rebuildGame(); updateTotal(); showTab('game');
 }
 
 for(let i=0;i<5;i++) addPlayerRow();
 applyLang();
-if('serviceWorker' in navigator) window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js'));
+if('serviceWorker' in navigator) window.addEventListener('load', ()=>navigator.serviceWorker.register('sw.js'));
 </script>
 </body>
 </html>
